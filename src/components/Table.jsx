@@ -552,21 +552,36 @@ export const Table = ({
 
               const winnerObj = winnerMap[originalSeatIndex];
 
-              // Determine seat placement relative to table felt so bubbles/chips face the center felt
-              const isTop = seatPos.top !== undefined && (typeof seatPos.top === 'number' ? seatPos.top <= 80 : parseFloat(seatPos.top) < 32);
-              const isBottom = seatPos.bottom !== undefined && (typeof seatPos.bottom === 'number' ? seatPos.bottom <= 90 : parseFloat(seatPos.bottom) < 30);
-              const isSideLeft = (seatPos.left !== undefined && seatPos.left !== '50%' && !String(seatPos.left).includes('50%')) && (seatPos.right === undefined);
-              const isSideRight = seatPos.right !== undefined && (seatPos.left === undefined || String(seatPos.left).includes('50%'));
-
+              // Determine seat placement relative to table felt so bubbles/chips face inward towards center felt
               let seatPlacement = 'bottom';
-              if (isTop) {
-                seatPlacement = 'top';
-              } else if (isBottom) {
+              if (displayPosIndex === 0) {
+                // Pos 0 is always Hero at Bottom Center -> action bubble points up towards center felt
                 seatPlacement = 'bottom';
-              } else if (isSideLeft) {
-                seatPlacement = 'left';
-              } else if (isSideRight) {
-                seatPlacement = 'right';
+              } else {
+                const topVal = seatPos.top !== undefined
+                  ? (typeof seatPos.top === 'number' ? seatPos.top : parseFloat(seatPos.top))
+                  : null;
+                const bottomVal = seatPos.bottom !== undefined
+                  ? (typeof seatPos.bottom === 'number' ? seatPos.bottom : parseFloat(seatPos.bottom))
+                  : null;
+
+                if (topVal !== null && topVal <= 30) {
+                  // Top rail seats face downward into table
+                  seatPlacement = 'top';
+                } else if (bottomVal !== null && bottomVal <= 35) {
+                  // Bottom rail seats face upward into table
+                  seatPlacement = 'bottom';
+                } else if (seatPos.left !== undefined && !String(seatPos.left).includes('50%')) {
+                  // Left rail seats face rightward into table
+                  seatPlacement = 'left';
+                } else if (seatPos.right !== undefined) {
+                  // Right rail seats face leftward into table
+                  seatPlacement = 'right';
+                } else if (topVal !== null && topVal < 50) {
+                  seatPlacement = 'top';
+                } else {
+                  seatPlacement = 'bottom';
+                }
               }
 
               return (

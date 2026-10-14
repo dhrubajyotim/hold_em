@@ -190,7 +190,7 @@ export const App = () => {
             }
             return prev;
           });
-        }, 3200);
+        }, 3500);
 
         if (action.includes('Fold')) {
           soundManager.playFold();
@@ -212,14 +212,8 @@ export const App = () => {
         const currentCount = displayedCommunityCardsRef.current.length;
         const targetCount = targetCards.length;
 
-        // Clear checks and calls when advancing to next street
-        setSeatActions((prev) => {
-          const next = {};
-          Object.entries(prev).forEach(([s, a]) => {
-            if (a.action.includes('All-In')) next[s] = a;
-          });
-          return next;
-        });
+        // Keep recent seat actions visible so players can clearly see checks, calls, and bets
+        // even as community cards are dealt. Actions expire naturally via their own 3500ms timer.
 
         if (currentCount === 0 && targetCount >= 3) {
           // FLOP DEALT: Unfold the 3 flop cards one by one!

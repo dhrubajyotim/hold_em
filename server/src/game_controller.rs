@@ -448,6 +448,8 @@ impl GameController {
             if should_finish_hand {
                 Self::conclude_hand(room_arc).await;
             } else if should_advance_street {
+                // Brief pause so players can clearly see the closing action bubble (Check/Call/Bet) before cards are dealt
+                sleep(Duration::from_millis(700)).await;
                 Self::advance_street(room_arc).await;
             } else {
                 Self::prompt_or_execute_turn(room_arc).await;

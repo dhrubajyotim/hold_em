@@ -74,35 +74,44 @@ export const Seat = ({
       case 'top':
         return {
           top: '100%',
-          marginTop: isMobile ? 3 : 5,
+          marginTop: isMobile ? 4 : 6,
           alignSelf: 'center',
           alignItems: 'center',
+          zIndex: 40,
         };
       case 'bottom':
         return {
           bottom: '100%',
-          marginBottom: isMobile ? 3 : 5,
+          marginBottom: isMobile ? 4 : 6,
           alignSelf: 'center',
           alignItems: 'center',
+          zIndex: 40,
         };
       case 'left':
         return {
-          top: isMobile ? -10 : -14,
-          left: isMobile ? 12 : 24,
+          top: '50%',
+          left: '100%',
+          marginLeft: isMobile ? 4 : 8,
+          transform: [{ translateY: -16 }],
           alignItems: 'flex-start',
+          zIndex: 40,
         };
       case 'right':
         return {
-          top: isMobile ? -10 : -14,
-          right: isMobile ? 12 : 24,
+          top: '50%',
+          right: '100%',
+          marginRight: isMobile ? 4 : 8,
+          transform: [{ translateY: -16 }],
           alignItems: 'flex-end',
+          zIndex: 40,
         };
       default:
         return {
           bottom: '100%',
-          marginBottom: isMobile ? 3 : 5,
+          marginBottom: isMobile ? 4 : 6,
           alignSelf: 'center',
           alignItems: 'center',
+          zIndex: 40,
         };
     }
   };
