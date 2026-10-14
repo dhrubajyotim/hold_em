@@ -1,42 +1,42 @@
 export const Colors = {
-  // Backgrounds & Felt
-  tableFelt: '#0d3d27',
-  tableFeltDark: '#082517',
-  tableFeltHighlight: '#165738',
-  tableRim: '#2b1d0c',
-  tableRimGold: '#9e7b33',
-  backgroundDark: '#07090e',
-  cardSurface: '#0f172a',
-  glassSurface: 'rgba(15, 23, 42, 0.85)',
-  glassBorder: 'rgba(212, 175, 55, 0.25)',
+  // Backgrounds & Calming Warm Felt
+  tableFelt: '#1b4332',          // Softer, natural forest sage green
+  tableFeltDark: '#143527',      // Gentle shadow green without harsh contrast
+  tableFeltHighlight: '#235943', // Warm diffused felt highlight
+  tableRim: '#2b231c',          // Warm chestnut wood
+  tableRimGold: '#c29d59',      // Soft champagne gold rim
+  backgroundDark: '#12161f',    // Gentle midnight slate (reduces harsh pure-black eye piercing)
+  cardSurface: '#18202f',       // Warm navy-slate card backing
+  glassSurface: 'rgba(24, 32, 47, 0.88)', // Calming frosted glass
+  glassBorder: 'rgba(194, 157, 89, 0.25)',
 
-  // Accents & Metallics
-  gold: '#d4af37',
-  goldLight: '#f6e27a',
-  goldDark: '#aa820a',
-  cyan: '#38bdf8',
-  emerald: '#10b981',
-  crimson: '#ef4444',
-  amber: '#f59e0b',
-  purple: '#a855f7',
+  // Warm, Elegant Accents (Softer luminance, zero retina pierce)
+  gold: '#dfb76c',              // Warm vintage champagne gold
+  goldLight: '#fae3a6',         // Gentle cream gold
+  goldDark: '#99732e',          // Muted antique gold
+  cyan: '#60a5fa',              // Soft cornflower/sky blue (replaces blinding electric cyan)
+  emerald: '#22c55e',           // Fresh mint/emerald
+  crimson: '#f43f5e',           // Soft coral-rose (replaces harsh laser red)
+  amber: '#fbbf24',             // Gentle warm amber
+  purple: '#a78bfa',            // Lavender pastel accent
 
-  // Text
-  textPrimary: '#f8fafc',
-  textSecondary: '#94a3b8',
-  textMuted: '#64748b',
+  // Soothing, Clear Typography Text
+  textPrimary: '#f8fafc',       // High legibility crisp off-white
+  textSecondary: '#cbd5e1',     // Soft readable silver mist
+  textMuted: '#94a3b8',         // Gentle slate gray
 
   // Chips
-  chip1: '#e2e8f0',   // White
-  chip5: '#ef4444',   // Red
-  chip25: '#10b981',  // Green
-  chip100: '#1e293b', // Black
-  chip500: '#a855f7', // Purple
-  chip1000: '#eab308' // Gold
+  chip1: '#f1f5f9',   // Crisp white
+  chip5: '#f43f5e',   // Coral rose
+  chip25: '#10b981',  // Mint green
+  chip100: '#334155', // Slate graphite
+  chip500: '#8b5cf6', // Soft violet
+  chip1000: '#eab308' // Amber gold
 };
 
 export const Shadows = {
-  goldGlow: '0 0 20px rgba(212, 175, 55, 0.45)',
-  tableGlow: 'inset 0 0 100px rgba(0, 0, 0, 0.85), 0 20px 50px rgba(0, 0, 0, 0.9)',
-  cardShadow: '0 8px 16px rgba(0, 0, 0, 0.6)',
-  chipShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
+  goldGlow: '0 0 16px rgba(223, 183, 108, 0.35)',
+  tableGlow: 'inset 0 0 80px rgba(0, 0, 0, 0.7), 0 16px 40px rgba(0, 0, 0, 0.75)',
+  cardShadow: '0 6px 14px rgba(0, 0, 0, 0.45)',
+  chipShadow: '0 3px 6px rgba(0, 0, 0, 0.4)',
 };

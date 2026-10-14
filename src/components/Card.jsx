@@ -9,10 +9,10 @@ const suitSymbols = {
 };
 
 const suitColors = {
-  Spades: '#1e293b',
-  Clubs: '#1e293b',
-  Hearts: '#ef4444',
-  Diamonds: '#ef4444',
+  Spades: '#292524',
+  Clubs: '#292524',
+  Hearts: '#e11d48',
+  Diamonds: '#e11d48',
 };
 
 export const Card = ({ card, faceDown = false, isHighlighted = false, size = 'normal', unfold = false }) => {
@@ -157,67 +157,67 @@ function getRankStr(rank) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 6,
+    backgroundColor: '#fafaf9', // Warm ivory linen, zero blinding glare
+    borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#d6d3d1',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 5,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
     position: 'relative',
     justifyContent: 'space-between',
     padding: 3,
     userSelect: 'none',
   },
   cardNormal: {
-    width: 58,
-    height: 82,
+    width: 60,
+    height: 84,
     borderRadius: 8,
     padding: 4,
   },
   cardHero: {
-    width: 48,
-    height: 68,
+    width: 50,
+    height: 70,
     borderRadius: 7,
     padding: 3,
   },
   cardMobile: {
-    width: 34,
-    height: 50,
+    width: 36,
+    height: 52,
     borderRadius: 5,
     padding: 2,
   },
   cardMini: {
-    width: 34,
-    height: 48,
+    width: 36,
+    height: 50,
     borderRadius: 5,
     padding: 2,
   },
   cardMicro: {
-    width: 26,
-    height: 38,
+    width: 28,
+    height: 40,
     borderRadius: 4,
     padding: 1,
   },
   faceDown: {
     backgroundColor: '#1e293b',
-    borderColor: '#d4af37',
+    borderColor: '#dfb76c',
     borderWidth: 1.5,
     padding: 2,
   },
   cardBackPattern: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#18202f',
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.4)',
+    borderColor: 'rgba(223, 183, 108, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardBackIcon: {
-    color: '#d4af37',
+    color: '#dfb76c',
     fontSize: 18,
     opacity: 0.85,
   },
@@ -233,36 +233,36 @@ const styles = StyleSheet.create({
   rankText: {
     fontFamily: 'Outfit',
     fontWeight: '800',
-    fontSize: 13,
-    lineHeight: 14,
+    fontSize: 14,
+    lineHeight: 15,
   },
   rankTextMobile: {
-    fontSize: 10,
-    lineHeight: 11,
-  },
-  rankTextMini: {
-    fontSize: 9,
-    lineHeight: 10,
-  },
-  rankTextMicro: {
-    fontSize: 8,
-    lineHeight: 8,
-  },
-  suitText: {
     fontSize: 11,
     lineHeight: 12,
   },
+  rankTextMini: {
+    fontSize: 10,
+    lineHeight: 11,
+  },
+  rankTextMicro: {
+    fontSize: 9,
+    lineHeight: 9,
+  },
+  suitText: {
+    fontSize: 12,
+    lineHeight: 13,
+  },
   suitTextMobile: {
+    fontSize: 10,
+    lineHeight: 11,
+  },
+  suitTextMini: {
     fontSize: 9,
     lineHeight: 10,
   },
-  suitTextMini: {
-    fontSize: 8,
-    lineHeight: 9,
-  },
   suitTextMicro: {
-    fontSize: 7,
-    lineHeight: 7,
+    fontSize: 8,
+    lineHeight: 8,
   },
   centerSuit: {
     position: 'absolute',

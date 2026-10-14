@@ -381,7 +381,7 @@ export const Table = ({
 
             {/* Center Pot & Community Cards Area */}
             <View style={[styles.centerFelt, isMobile && styles.centerFeltMobile]}>
-              <PotDisplay totalPot={totalPot} pots={pots} isMobile={isMobile} />
+              <PotDisplay totalPot={totalPot} isMobile={isMobile} />
 
               <View style={[styles.communityCardsRow, isMobile && styles.communityCardsRowMobile]}>
                 {Array.from({ length: 5 }).map((_, idx) => {
@@ -428,12 +428,12 @@ export const Table = ({
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  padding: isMobile ? '8px 14px' : '12px 26px',
-                  background: 'rgba(10, 16, 26, 0.94)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1.5px solid #d4af37',
-                  borderRadius: '16px',
-                  boxShadow: '0 12px 36px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.4)',
+                  padding: isMobile ? '10px 16px' : '14px 28px',
+                  background: 'rgba(24, 32, 47, 0.94)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1.5px solid #dfb76c',
+                  borderRadius: '18px',
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 16px rgba(223, 183, 108, 0.25)',
                   maxWidth: isMobile ? '92%' : '440px',
                   textAlign: 'center',
                 }}
@@ -442,7 +442,7 @@ export const Table = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  color: '#d4af37',
+                  color: '#dfb76c',
                   fontFamily: "'Cinzel', serif",
                   fontWeight: 800,
                   fontSize: isMobile ? '12px' : '14px',
@@ -627,7 +627,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    backgroundColor: '#07090e',
+    backgroundColor: '#12161f',
   },
   tableWrapperMobile: {
     padding: 4,
@@ -639,15 +639,15 @@ const styles = StyleSheet.create({
     maxWidth: 1100,
     height: '84%',
     maxHeight: 640,
-    backgroundColor: '#1c150c',
+    backgroundColor: '#271f17',
     borderRadius: 240,
     padding: 16,
-    borderWidth: 6,
-    borderColor: '#0e0b06',
+    borderWidth: 5,
+    borderColor: '#19140e',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.9,
-    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.75,
+    shadowRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'visible',
@@ -678,8 +678,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: Colors.gold,
     shadowColor: Colors.gold,
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     overflow: 'visible',
   },
   goldBevelMobile: {
@@ -696,9 +696,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 216,
-    backgroundColor: '#0b3520',
+    backgroundColor: '#1b4332',
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.4)',
+    borderColor: 'rgba(223, 183, 108, 0.3)',
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: 0.1,
+    opacity: 0.08,
   },
   watermarkText: {
     fontFamily: 'Cinzel',

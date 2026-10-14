@@ -50,14 +50,14 @@ export const ChipBadge = ({ amount, size = 'normal' }) => {
 
 const styles = StyleSheet.create({
   badgeContainer: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 9,
     paddingVertical: 3,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.4)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.35,
     shadowRadius: 4,
     elevation: 4,
     alignSelf: 'center',
@@ -90,13 +90,13 @@ const styles = StyleSheet.create({
   chipText: {
     fontFamily: 'JetBrains Mono',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 13,
   },
   chipTextMini: {
-    fontSize: 10,
+    fontSize: 11,
   },
   chipTextMicro: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
   },
 });

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '../styles/theme';
 import { ChipBadge } from './ChipBadge';
 
-export const PotDisplay = ({ totalPot, pots = [], isMobile = false }) => {
+export const PotDisplay = ({ totalPot, isMobile = false }) => {
   if (!totalPot || totalPot === 0) return null;
 
   return (
@@ -14,19 +14,6 @@ export const PotDisplay = ({ totalPot, pots = [], isMobile = false }) => {
           ${totalPot.toLocaleString()}
         </Text>
       </View>
-
-      {pots.length > 1 && (
-        <View style={[styles.sidePotsRow, isMobile && styles.sidePotsRowMobile]}>
-          {pots.map((pot, idx) => (
-            <View key={idx} style={[styles.sidePotItem, isMobile && styles.sidePotItemMobile]}>
-              <Text style={[styles.sidePotLabel, isMobile && styles.sidePotLabelMobile]}>
-                {idx === 0 ? 'Main Pot' : `Side Pot ${idx}`}:
-              </Text>
-              <ChipBadge amount={pot.amount} size={isMobile ? 'micro' : 'mini'} />
-            </View>
-          ))}
-        </View>
-      )}
     </View>
   );
 };
@@ -40,47 +27,49 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   mainPotBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(24, 32, 47, 0.92)',
+    backdropFilter: 'blur(12px)',
     borderWidth: 1.5,
     borderColor: Colors.gold,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 5,
+    borderRadius: 22,
+    paddingHorizontal: 18,
+    paddingVertical: 6,
     alignItems: 'center',
     shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.6,
-    shadowRadius: 10,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
   },
   mainPotBadgeMobile: {
-    paddingHorizontal: 10,
-    paddingVertical: 2,
-    borderRadius: 14,
-    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 3,
+    borderRadius: 16,
+    borderWidth: 1.5,
   },
   mainPotLabel: {
     color: Colors.gold,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 1.2,
+    letterSpacing: 1.4,
   },
   mainPotLabelMobile: {
-    fontSize: 8,
-    letterSpacing: 0.8,
+    fontSize: 9,
+    letterSpacing: 1,
   },
   mainPotAmount: {
     color: '#ffffff',
     fontFamily: 'JetBrains Mono',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
+    letterSpacing: 0.5,
   },
   mainPotAmountMobile: {
-    fontSize: 12,
+    fontSize: 14,
   },
   sidePotsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 4,
+    marginTop: 5,
   },
   sidePotItem: {
     flexDirection: 'row',

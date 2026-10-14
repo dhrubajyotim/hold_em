@@ -110,44 +110,37 @@ export const Seat = ({
   const getActionBubbleStyle = (action = '') => {
     if (action.includes('Check')) {
       return {
-        backgroundColor: 'rgba(14, 116, 144, 0.95)',
-        border: '1.5px solid #38bdf8',
+        backgroundColor: 'rgba(30, 58, 95, 0.95)',
+        border: '1.5px solid #60a5fa',
         color: '#e0f2fe',
       };
     }
     if (action.includes('Call')) {
       return {
-        backgroundColor: 'rgba(5, 150, 105, 0.95)',
-        border: '1.5px solid #34d399',
-        color: '#ffffff',
+        backgroundColor: 'rgba(20, 83, 45, 0.95)',
+        border: '1.5px solid #4ade80',
+        color: '#f0fdf4',
       };
     }
     if (action.includes('All-In')) {
       return {
-        backgroundColor: 'rgba(220, 38, 38, 0.95)',
+        backgroundColor: 'rgba(159, 18, 57, 0.95)',
         border: '1.5px solid #fbbf24',
         color: '#ffffff',
-        boxShadow: '0 0 12px rgba(239, 68, 68, 0.7)',
+        boxShadow: '0 0 10px rgba(244, 63, 94, 0.45)',
       };
     }
-    if (action.includes('Raise')) {
+    if (action.includes('Raise') || action.includes('Bet')) {
       return {
-        backgroundColor: 'rgba(217, 119, 6, 0.95)',
-        border: '1.5px solid #f59e0b',
-        color: '#ffffff',
-      };
-    }
-    if (action.includes('Bet')) {
-      return {
-        backgroundColor: 'rgba(180, 83, 9, 0.95)',
+        backgroundColor: 'rgba(146, 64, 14, 0.95)',
         border: '1.5px solid #fbbf24',
-        color: '#ffffff',
+        color: '#fffbeb',
       };
     }
     if (action.includes('Fold')) {
       return {
         backgroundColor: 'rgba(51, 65, 85, 0.9)',
-        border: '1px solid #64748b',
+        border: '1px solid #94a3b8',
         color: '#cbd5e1',
       };
     }
@@ -198,17 +191,17 @@ export const Seat = ({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                padding: isMobile ? '2px 7px' : '3px 10px',
+                gap: '5px',
+                padding: isMobile ? '4px 9px' : '5px 12px',
                 borderRadius: '999px',
-                fontSize: isMobile ? '10px' : '11px',
+                fontSize: isMobile ? '11px' : '12px',
                 fontWeight: 800,
-                letterSpacing: '0.5px',
+                letterSpacing: '0.6px',
                 textTransform: 'uppercase',
                 fontFamily: "'Outfit', sans-serif",
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.35)',
                 whiteSpace: 'nowrap',
-                marginBottom: current_bet > 0 && !lastAction.action?.includes('Check') && !lastAction.action?.includes('Fold') ? 3 : 0,
+                marginBottom: current_bet > 0 && !lastAction.action?.includes('Check') && !lastAction.action?.includes('Fold') ? 4 : 0,
                 ...getActionBubbleStyle(lastAction.action),
               }}
             >
@@ -217,7 +210,7 @@ export const Seat = ({
             </div>
           )}
           {current_bet > 0 && !lastAction?.action?.includes('Check') && !lastAction?.action?.includes('Fold') && (
-            <ChipBadge amount={current_bet} size={isMobile ? 'micro' : 'mini'} />
+            <ChipBadge amount={current_bet} size={isMobile ? 'mini' : 'normal'} />
           )}
         </View>
       )}
@@ -261,11 +254,11 @@ export const Seat = ({
             ]}
           >
             {is_bot ? (
-              <Bot size={isMobile && !isClientSeat ? 12 : 18} color="#f8fafc" />
+              <Bot size={isMobile && !isClientSeat ? 14 : 18} color="#f8fafc" />
             ) : isClientSeat ? (
-              <Crown size={isMobile ? 15 : 18} color="#d4af37" />
+              <Crown size={isMobile ? 16 : 20} color="#dfb76c" />
             ) : (
-              <User size={isMobile && !isClientSeat ? 12 : 18} color="#f8fafc" />
+              <User size={isMobile && !isClientSeat ? 14 : 18} color="#f8fafc" />
             )}
           </View>
 
@@ -424,43 +417,43 @@ const styles = StyleSheet.create({
     fontSize: 8,
   },
   seatPod: {
-    width: 135,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    width: 146,
+    backgroundColor: 'rgba(24, 32, 47, 0.9)',
     backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
     borderRadius: 16,
-    padding: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    padding: 8,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
     alignItems: 'center',
     position: 'relative',
   },
   opponentPodMobile: {
-    width: 82,
-    padding: 3,
+    width: 96,
+    padding: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.14)',
   },
   heroPodMobile: {
-    width: 154,
-    padding: 5,
-    borderRadius: 16,
+    width: 168,
+    padding: 7,
+    borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.7)',
-    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    borderColor: 'rgba(223, 183, 108, 0.6)',
+    backgroundColor: 'rgba(24, 32, 47, 0.94)',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
   },
   activeTurnGlow: {
     borderColor: Colors.gold,
     shadowColor: Colors.gold,
-    shadowOpacity: 0.9,
-    shadowRadius: 16,
+    shadowOpacity: 0.7,
+    shadowRadius: 12,
   },
   foldedPod: {
     opacity: 0.45,
@@ -471,34 +464,34 @@ const styles = StyleSheet.create({
   avatarRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     width: '100%',
-    marginBottom: 4,
+    marginBottom: 5,
   },
   avatarRowMobile: {
-    gap: 3,
-    marginBottom: 2,
+    gap: 4,
+    marginBottom: 3,
   },
   avatarCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   avatarCircleMobile: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     borderWidth: 1,
   },
   humanAvatar: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#2563eb',
   },
   botAvatar: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#7c3aed',
   },
   clientAvatarHighlight: {
     borderColor: Colors.gold,
@@ -510,30 +503,31 @@ const styles = StyleSheet.create({
   playerName: {
     color: Colors.textPrimary,
     fontWeight: '700',
-    fontSize: 11,
+    fontSize: 13,
+    letterSpacing: 0.2,
   },
   playerNameMobile: {
-    fontSize: 9,
-    lineHeight: 10,
+    fontSize: 11,
+    lineHeight: 13,
   },
   chipStack: {
     color: Colors.goldLight,
     fontFamily: 'JetBrains Mono',
     fontWeight: '700',
-    fontSize: 11,
+    fontSize: 12,
   },
   chipStackMobile: {
-    fontSize: 9,
-    lineHeight: 10,
+    fontSize: 10,
+    lineHeight: 12,
   },
   cardsRow: {
     flexDirection: 'row',
-    gap: 4,
-    marginTop: 2,
+    gap: 5,
+    marginTop: 4,
   },
   cardsRowMobile: {
-    gap: 2,
-    marginTop: 1,
+    gap: 3,
+    marginTop: 2,
   },
   betInFront: {
     position: 'absolute',
