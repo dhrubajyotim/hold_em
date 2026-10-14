@@ -32,6 +32,8 @@ export const ActionConsole = ({
   }
 
   const canCheck = callAmount === 0;
+  // maxRaise / minRaise are "raise TO" totals; you can only raise if your stack exceeds a call
+  const canRaise = maxRaise > currentBet + callAmount;
 
   const handleFold = () => {
     onAction('Fold');
@@ -76,6 +78,7 @@ export const ActionConsole = ({
   return (
     <View style={[styles.container, isMobile && styles.containerMobile]}>
       {/* Quick Bet Presets Row (iOS Pill Chips) */}
+      {canRaise && (
       <View style={[styles.presetsRow, isMobile && styles.presetsRowMobile]}>
         <TouchableOpacity
           style={[styles.presetBtn, isMobile && styles.presetBtnMobile]}
@@ -108,9 +111,10 @@ export const ActionConsole = ({
           <Text style={styles.amountPillValue}>${raiseAmount.toLocaleString()}</Text>
         </View>
       </View>
+      )}
 
       {/* iOS Fluid Range Slider */}
-      {maxRaise > minRaise && (
+      {canRaise && maxRaise > minRaise && (
         <View style={styles.sliderContainer}>
           <input
             type="range"
@@ -164,10 +168,10 @@ export const ActionConsole = ({
         </TouchableOpacity>
 
         {/* Bet / Raise Button */}
+        {canRaise && (
         <TouchableOpacity
           style={[styles.actionBtn, styles.raiseBtn, isMobile && styles.actionBtnMobile]}
           onPress={handleRaise}
-          disabled={maxRaise <= 0}
         >
           <Text style={[styles.actionBtnText, isMobile && styles.actionBtnTextMobile]}>
             {raiseAmount >= maxRaise ? 'ALL-IN' : canCheck ? 'BET' : 'RAISE'}
@@ -176,6 +180,7 @@ export const ActionConsole = ({
             ${raiseAmount.toLocaleString()}
           </Text>
         </TouchableOpacity>
+        )}
       </View>
     </View>
   );

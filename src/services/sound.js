@@ -1,9 +1,12 @@
-// Professional Casino Audio Synthesizer using Web Audio API
-// Real clay poker chips, felt table taps, card snaps, and pot collection cascades
+// Soothing Casino Audio Synthesizer using Web Audio API
+// Soft sine-based tones, gentle envelopes, warm low-pass master bus and a subtle room reverb.
+// Avoids harsh triangle/square waves and fast downward pitch sweeps (which sound like croaks/chirps).
 class SoundManager {
   constructor() {
     this.ctx = null;
     this.muted = false;
+    this.master = null; // dry + wet bus input
+    this.reverbSend = null;
   }
 
   init() {
@@ -11,6 +14,7 @@ class SoundManager {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
+        this._buildMasterBus();
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
@@ -23,355 +27,238 @@ class SoundManager {
     return this.muted;
   }
 
-  // Helper to generate a single authentic clay chip clack
-  _generateChipClack(time, pitchVariance = 0, volume = 0.3) {
-    if (!this.ctx) return;
+  // ---------- Master bus: gain -> warm lowpass -> gentle compressor -> out, plus reverb send ----------
+  _buildMasterBus() {
+    const ctx = this.ctx;
 
-    // 1. High frequency ceramic click (transient)
-    const bufferSize = Math.floor(this.ctx.sampleRate * 0.025);
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
-    }
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -20;
+    compressor.knee.value = 24;
+    compressor.ratio.value = 3;
+    compressor.attack.value = 0.005;
+    compressor.release.value = 0.25;
+    compressor.connect(ctx.destination);
 
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
+    const warmth = ctx.createBiquadFilter();
+    warmth.type = 'lowpass';
+    warmth.frequency.value = 4800;
+    warmth.Q.value = 0.5;
+    warmth.connect(compressor);
 
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(2600 + pitchVariance * 200, time);
-    filter.Q.value = 5.0;
+    this.master = ctx.createGain();
+    this.master.gain.value = 0.6;
+    this.master.connect(warmth);
 
-    const noiseGain = this.ctx.createGain();
-    noiseGain.gain.setValueAtTime(volume * 0.8, time);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.025);
+    // Soft room reverb from a generated decaying-noise impulse
+    const convolver = ctx.createConvolver();
+    convolver.buffer = this._makeImpulse(1.8, 3.2);
+    const wet = ctx.createGain();
+    wet.gain.value = 0.22;
+    convolver.connect(wet);
+    wet.connect(warmth);
 
-    noise.connect(filter);
-    filter.connect(noiseGain);
-    noiseGain.connect(this.ctx.destination);
-    noise.start(time);
-
-    // 2. Ceramic body resonance ring (tuned around 1600-2100 Hz, rapid decay)
-    const osc = this.ctx.createOscillator();
-    const oscGain = this.ctx.createGain();
-
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(1750 + pitchVariance * 180, time);
-
-    oscGain.gain.setValueAtTime(volume * 0.5, time);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.035);
-
-    osc.connect(oscGain);
-    oscGain.connect(this.ctx.destination);
-
-    osc.start(time);
-    osc.stop(time + 0.035);
+    this.reverbSend = ctx.createGain();
+    this.reverbSend.gain.value = 1;
+    this.reverbSend.connect(convolver);
   }
 
-  // Single / Double Clay Poker Chip Clack (Call / Bet)
-  playChip() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const now = this.ctx.currentTime;
-    const rnd = (Math.random() - 0.5);
-
-    // First chip impact
-    this._generateChipClack(now, rnd, 0.35);
-
-    // Secondary bounce / contact chip clack (30ms later)
-    this._generateChipClack(now + 0.032, rnd + 0.3, 0.22);
-  }
-
-  // Raising / Big Bet: Staggered chip stack splash / clatter
-  playRaise() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const now = this.ctx.currentTime;
-    const delays = [0, 0.028, 0.055, 0.09];
-    delays.forEach((delay, idx) => {
-      const pVar = (Math.random() - 0.5) * 1.2;
-      const vol = 0.32 - idx * 0.04;
-      this._generateChipClack(now + delay, pVar, vol);
-    });
-  }
-
-  // Check: Authentic double knuckle tap on felt table
-  playCheck() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const playKnock = (delay) => {
-      const now = this.ctx.currentTime + delay;
-
-      // Deep felt thud
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(95, now);
-      osc.frequency.exponentialRampToValueAtTime(35, now + 0.06);
-
-      gain.gain.setValueAtTime(0.5, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.06);
-
-      // Muffled felt texture
-      const bufferSize = Math.floor(this.ctx.sampleRate * 0.03);
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+  _makeImpulse(seconds, decay) {
+    const rate = this.ctx.sampleRate;
+    const length = Math.floor(rate * seconds);
+    const impulse = this.ctx.createBuffer(2, length, rate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = impulse.getChannelData(ch);
+      for (let i = 0; i < length; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
       }
-      const noise = this.ctx.createBufferSource();
-      noise.buffer = buffer;
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 450;
-      const nGain = this.ctx.createGain();
-      nGain.gain.setValueAtTime(0.3, now);
-      nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-
-      noise.connect(filter);
-      filter.connect(nGain);
-      nGain.connect(this.ctx.destination);
-      noise.start(now);
-    };
-
-    playKnock(0);
-    playKnock(0.11);
-  }
-
-  // Fold: Card flick & sliding into muck
-  playFold() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const now = this.ctx.currentTime;
-    const bufferSize = Math.floor(this.ctx.sampleRate * 0.09);
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
     }
-
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1400, now);
-    filter.frequency.exponentialRampToValueAtTime(550, now + 0.09);
-    filter.Q.value = 2.5;
-
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    noise.start(now);
+    return impulse;
   }
 
-  // Card Deal: Crisp card flick / slide off deck
-  playCard() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const now = this.ctx.currentTime;
-    const bufferSize = Math.floor(this.ctx.sampleRate * 0.06);
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+  _out(node, reverbAmount = 0.5) {
+    node.connect(this.master);
+    if (reverbAmount > 0) {
+      const send = this.ctx.createGain();
+      send.gain.value = reverbAmount;
+      node.connect(send);
+      send.connect(this.reverbSend);
     }
-
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.setValueAtTime(1800, now);
-
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    noise.start(now);
   }
 
-  // Card Reveal / Flip: Tactile snap and quick friction slide as cards are turned face-up
-  playCardReveal() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const now = this.ctx.currentTime;
-
-    // 1. Sharp card snap transient (card popping face-up)
-    const snapOsc = this.ctx.createOscillator();
-    const snapGain = this.ctx.createGain();
-    snapOsc.type = 'triangle';
-    snapOsc.frequency.setValueAtTime(2600, now);
-    snapOsc.frequency.exponentialRampToValueAtTime(420, now + 0.045);
-
-    snapGain.gain.setValueAtTime(0.38, now);
-    snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
-
-    snapOsc.connect(snapGain);
-    snapGain.connect(this.ctx.destination);
-    snapOsc.start(now);
-    snapOsc.stop(now + 0.045);
-
-    // 2. Card body whip & felt landing texture (noise burst through bandpass)
-    const bufferSize = Math.floor(this.ctx.sampleRate * 0.08);
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
-    }
-
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(2100, now);
-    filter.frequency.exponentialRampToValueAtTime(800, now + 0.08);
-    filter.Q.value = 3.0;
-
-    const noiseGain = this.ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.32, now + 0.008);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-
-    noise.connect(filter);
-    filter.connect(noiseGain);
-    noiseGain.connect(this.ctx.destination);
-    noise.start(now + 0.008);
-  }
-
-  // Pot Win: Casino chips sliding and stacking cascade + warm victory chord
-  playWinPot() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const now = this.ctx.currentTime;
-
-    // 1. Cascading chip stacking / raking sounds (7 micro-clacks)
-    const chipDelays = [0, 0.04, 0.08, 0.12, 0.17, 0.22, 0.28];
-    chipDelays.forEach((delay, idx) => {
-      const pVar = (Math.random() - 0.5) * 1.5;
-      const vol = 0.28 + (idx % 2) * 0.08;
-      this._generateChipClack(now + delay, pVar, vol);
-    });
-
-    // 2. Warm casino bell chime (C, E, G, High C)
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-    notes.forEach((freq, idx) => {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const noteTime = now + 0.08 + idx * 0.09;
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, noteTime);
-
-      gain.gain.setValueAtTime(0.2, noteTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.45);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(noteTime);
-      osc.stop(noteTime + 0.45);
-    });
-  }
-
-  // All-In: Heavy stack push with dramatic whoosh
-  playAllIn() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const now = this.ctx.currentTime;
-
-    // Multi-chip splash
-    for (let i = 0; i < 5; i++) {
-      this._generateChipClack(now + i * 0.03, (Math.random() - 0.5) * 1.2, 0.35);
-    }
-
-    // Heavy felt slide bass
+  // ---------- Primitives ----------
+  // Soft sine tone with smooth attack and exponential release
+  _tone(freq, time, { dur = 0.4, vol = 0.1, attack = 0.012, type = 'sine', reverb = 0.5 } = {}) {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(160, now);
-    osc.frequency.exponentialRampToValueAtTime(60, now + 0.22);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, time);
 
-    gain.gain.setValueAtTime(0.4, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(vol, time + attack);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
 
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.22);
+    this._out(gain, reverb);
+    osc.start(time);
+    osc.stop(time + dur + 0.05);
   }
 
-  // Full Tournament Victory Fanfare
-  playTournamentWin() {
-    if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
+  // Filtered noise burst with soft attack (for felt / card textures)
+  _noise(time, { dur = 0.1, vol = 0.1, attack = 0.006, filter = 'bandpass', freq = 1200, freqEnd = null, Q = 0.8, reverb = 0.3 } = {}) {
+    const size = Math.floor(this.ctx.sampleRate * (dur + 0.02));
+    const buffer = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
 
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+
+    const f = this.ctx.createBiquadFilter();
+    f.type = filter;
+    f.frequency.setValueAtTime(freq, time);
+    if (freqEnd) f.frequency.exponentialRampToValueAtTime(freqEnd, time + dur);
+    f.Q.value = Q;
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(vol, time + attack);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+    src.connect(f);
+    f.connect(gain);
+    this._out(gain, reverb);
+    src.start(time);
+    src.stop(time + dur + 0.02);
+  }
+
+  // Gentle, rounded chip "tink" — soft ceramic touch rather than a sharp clack
+  _chipTouch(time, variance = 0, vol = 0.1) {
+    const base = 1900 + variance * 160;
+    this._tone(base, time, { dur: 0.09, vol: vol * 0.55, attack: 0.003, reverb: 0.35 });
+    this._tone(base * 1.5, time, { dur: 0.06, vol: vol * 0.25, attack: 0.003, reverb: 0.35 });
+    this._noise(time, { dur: 0.03, vol: vol * 0.35, attack: 0.002, filter: 'lowpass', freq: 3200, Q: 0.5, reverb: 0.15 });
+  }
+
+  _ready() {
+    if (this.muted) return false;
+    this.init();
+    return !!this.ctx;
+  }
+
+  // ---------- Game sounds ----------
+
+  // Call / Bet: two soft chip touches
+  playChip() {
+    if (!this._ready()) return;
     const now = this.ctx.currentTime;
+    const rnd = Math.random() - 0.5;
+    this._chipTouch(now, rnd, 0.14);
+    this._chipTouch(now + 0.045, rnd + 0.25, 0.09);
+  }
+
+  // Raise: a short, gentle chip stack ripple
+  playRaise() {
+    if (!this._ready()) return;
+    const now = this.ctx.currentTime;
+    [0, 0.05, 0.1, 0.16].forEach((d, i) => {
+      this._chipTouch(now + d, (Math.random() - 0.5) * 0.8, 0.13 - i * 0.02);
+    });
+  }
+
+  // Check: soft, muted double tap on felt (fixed pitch — no croaky sweep)
+  playCheck() {
+    if (!this._ready()) return;
+    const now = this.ctx.currentTime;
+    const tap = (t, vol) => {
+      this._tone(170, t, { dur: 0.09, vol, attack: 0.004, reverb: 0.15 });
+      this._noise(t, { dur: 0.05, vol: vol * 0.6, attack: 0.003, filter: 'lowpass', freq: 700, Q: 0.4, reverb: 0.1 });
+    };
+    tap(now, 0.16);
+    tap(now + 0.13, 0.11);
+  }
+
+  // Fold: airy, slow card slide
+  playFold() {
+    if (!this._ready()) return;
+    const now = this.ctx.currentTime;
+    this._noise(now, { dur: 0.22, vol: 0.09, attack: 0.03, filter: 'bandpass', freq: 1100, freqEnd: 500, Q: 0.7, reverb: 0.3 });
+  }
+
+  // Card deal: soft swish
+  playCard() {
+    if (!this._ready()) return;
+    const now = this.ctx.currentTime;
+    this._noise(now, { dur: 0.09, vol: 0.08, attack: 0.008, filter: 'bandpass', freq: 3200, freqEnd: 2200, Q: 0.6, reverb: 0.2 });
+  }
+
+  // Card reveal: swish + a faint, warm chime
+  playCardReveal() {
+    if (!this._ready()) return;
+    const now = this.ctx.currentTime;
+    this._noise(now, { dur: 0.12, vol: 0.08, attack: 0.01, filter: 'bandpass', freq: 2600, freqEnd: 1500, Q: 0.6, reverb: 0.25 });
+    this._tone(880, now + 0.03, { dur: 0.5, vol: 0.045, attack: 0.015, reverb: 0.7 });
+    this._tone(1318.5, now + 0.03, { dur: 0.4, vol: 0.02, attack: 0.015, reverb: 0.7 });
+  }
+
+  // Pot win: chips gathering + a soft, dreamy major-9 arpeggio
+  playWinPot() {
+    if (!this._ready()) return;
+    const now = this.ctx.currentTime;
+
+    [0, 0.06, 0.12, 0.19, 0.27].forEach((d) => {
+      this._chipTouch(now + d, (Math.random() - 0.5) * 1.0, 0.09);
+    });
+
+    // Cmaj9: C5 E5 G5 B5 D6
+    [523.25, 659.25, 783.99, 987.77, 1174.66].forEach((freq, i) => {
+      const t = now + 0.12 + i * 0.11;
+      this._tone(freq, t, { dur: 1.1, vol: 0.07, attack: 0.02, reverb: 0.8 });
+    });
+  }
+
+  // All-in: chips push + a warm low swell
+  playAllIn() {
+    if (!this._ready()) return;
+    const now = this.ctx.currentTime;
+
+    for (let i = 0; i < 5; i++) {
+      this._chipTouch(now + i * 0.045, (Math.random() - 0.5) * 0.8, 0.11);
+    }
+
+    // Warm A2 + E3 swell (slow attack, no pitch drop)
+    this._tone(110, now, { dur: 0.9, vol: 0.12, attack: 0.12, reverb: 0.5 });
+    this._tone(164.81, now, { dur: 0.9, vol: 0.07, attack: 0.15, reverb: 0.5 });
+    this._noise(now, { dur: 0.35, vol: 0.05, attack: 0.08, filter: 'lowpass', freq: 600, Q: 0.4, reverb: 0.3 });
+  }
+
+  // Tournament victory: gentle, lush chord progression
+  playTournamentWin() {
+    if (!this._ready()) return;
+    const now = this.ctx.currentTime;
+
     const chords = [
-      [523.25, 659.25, 783.99],          // C major
-      [587.33, 739.99, 880.00],          // D major
-      [659.25, 830.61, 987.77],          // E major
-      [1046.5, 1318.5, 1567.98, 2093.0], // High C grand chord
+      [261.63, 329.63, 392.0, 493.88], // Cmaj7
+      [220.0, 261.63, 329.63, 392.0], // Am7
+      [174.61, 220.0, 261.63, 329.63], // Fmaj7
+      [261.63, 392.0, 523.25, 659.25, 783.99], // C major (open, final)
     ];
 
-    chords.forEach((chord, cIdx) => {
-      chord.forEach((freq) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        const t = now + cIdx * 0.18;
-
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, t);
-
-        const dur = cIdx === chords.length - 1 ? 1.2 : 0.25;
-        gain.gain.setValueAtTime(0.22, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(t);
-        osc.stop(t + dur);
+    chords.forEach((chord, ci) => {
+      const t = now + ci * 0.45;
+      const last = ci === chords.length - 1;
+      chord.forEach((freq, ni) => {
+        this._tone(freq, t + ni * 0.03, {
+          dur: last ? 2.4 : 0.9,
+          vol: 0.05,
+          attack: 0.06,
+          reverb: 0.9,
+        });
       });
     });
 
-    // Chip shower accompaniment
-    for (let i = 0; i < 12; i++) {
-      this._generateChipClack(now + i * 0.08, (Math.random() - 0.5) * 2, 0.25);
+    // Light shimmer of chip touches
+    for (let i = 0; i < 6; i++) {
+      this._chipTouch(now + 1.35 + i * 0.09, (Math.random() - 0.5) * 1.2, 0.06);
     }
   }
 

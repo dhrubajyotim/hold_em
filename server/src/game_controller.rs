@@ -346,7 +346,16 @@ impl GameController {
                         (if is_all_in { "All-In Call" } else { "Call" }.to_string(), call_amount, current_bet + call_amount)
                     }
                     PlayerActionType::Raise | PlayerActionType::AllIn => {
-                        let target_bet = amount.unwrap_or(room.min_raise).max(room.min_raise);
+                        // All amounts are "raise TO" totals (including chips already in front)
+                        let max_total = current_bet + chips;
+                        let target_bet = if action == PlayerActionType::AllIn {
+                            max_total
+                        } else {
+                            amount
+                                .unwrap_or(room.min_raise)
+                                .max(room.min_raise)
+                                .min(max_total)
+                        };
                         let additional = target_bet.saturating_sub(current_bet).min(chips);
                         let final_bet = current_bet + additional;
                         let is_all_in = chips <= additional;
@@ -750,7 +759,8 @@ impl GameController {
                     seat: turn_seat,
                     call_amount,
                     min_raise,
-                    max_raise: player.chips,
+                    // Raise-to cap: stack behind + what's already committed this street
+                    max_raise: player.chips + player.current_bet,
                 });
                 room.broadcast_state();
             }
