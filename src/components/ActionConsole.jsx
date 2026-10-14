@@ -34,6 +34,11 @@ export const ActionConsole = ({
   const canCheck = callAmount === 0;
   // maxRaise / minRaise are "raise TO" totals; you can only raise if your stack exceeds a call
   const canRaise = maxRaise > currentBet + callAmount;
+  // Chips behind (not yet committed this street)
+  const myStack = Math.max(0, maxRaise - currentBet);
+  // If calling costs your whole stack (or more), it's an all-in call
+  const isAllInCall = !canCheck && callAmount >= myStack;
+  const effectiveCall = Math.min(callAmount, myStack);
 
   const handleFold = () => {
     onAction('Fold');
@@ -158,11 +163,11 @@ export const ActionConsole = ({
           onPress={handleCheckOrCall}
         >
           <Text style={[styles.actionBtnText, isMobile && styles.actionBtnTextMobile]}>
-            {canCheck ? 'CHECK' : 'CALL'}
+            {canCheck ? 'CHECK' : isAllInCall ? 'ALL-IN CALL' : 'CALL'}
           </Text>
           {!canCheck && (
             <Text style={[styles.subActionText, isMobile && styles.subActionTextMobile]}>
-              ${callAmount.toLocaleString()}
+              ${effectiveCall.toLocaleString()}
             </Text>
           )}
         </TouchableOpacity>
