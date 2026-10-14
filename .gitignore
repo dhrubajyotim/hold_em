@@ -1,0 +1,27 @@
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Rust
+server/target/
+server/**/target/
+target/
+**/*.rs.bk
+*.pdb
+
+# Database & runtime
+poker.db
+*.db-journal
+*.log
+
+# Environment & IDE
+.env
+.env.*.local
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

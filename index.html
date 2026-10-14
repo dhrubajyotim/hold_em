@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Championship Texas Hold'em - 7-Player Tournament</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body, html, #root {
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+        background-color: #07090e;
+        color: #f1f5f9;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        touch-action: manipulation;
+      }
+      /* Custom luxury scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2a3342;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #d4af37;
+      }
+
+      /* iOS Apple-style Range Slider */
+      .ios-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 28px;
+        background: transparent;
+        outline: none;
+        margin: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+      .ios-slider::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        border: none;
+        backdrop-filter: blur(10px);
+      }
+      .ios-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 2px rgba(0, 0, 0, 0.3);
+        margin-top: -8px;
+        border: 0.5px solid rgba(0, 0, 0, 0.08);
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+      }
+      .ios-slider::-webkit-slider-thumb:active {
+        transform: scale(1.15);
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5), 0 0 4px rgba(0, 0, 0, 0.3);
+      }
+      .ios-slider::-moz-range-track {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        border: none;
+      }
+      .ios-slider::-moz-range-thumb {
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Keyframe animations for winning pot and winner banner */
+      @keyframes flyPotTowardsWinner {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.6);
+        }
+        15% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1.15);
+        }
+        40% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1.05);
+        }
+        85% {
+          opacity: 1;
+          transform: translate(calc(-50% + var(--target-x, 0px)), calc(-50% + var(--target-y, 140px))) scale(0.95);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--target-x, 0px)), calc(-50% + var(--target-y, 140px))) scale(0.5);
+        }
+      }
+
+      @keyframes winnerBannerPop {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -60%) scale(0.8);
+        }
+        60% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1.04);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      .flying-pot-anim {
+        animation: flyPotTowardsWinner 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      }
+
+      .winner-banner-anim {
+        animation: winnerBannerPop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+      }
+
+      @keyframes cardUnfoldFlip {
+        0% {
+          transform: perspective(400px) rotateY(-80deg) scale(0.88);
+          opacity: 0.15;
+        }
+        55% {
+          transform: perspective(400px) rotateY(14deg) scale(1.06);
+          opacity: 1;
+        }
+        100% {
+          transform: perspective(400px) rotateY(0deg) scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes actionBubblePop {
+        0% {
+          transform: scale(0.65) translateY(4px);
+          opacity: 0;
+        }
+        60% {
+          transform: scale(1.1) translateY(-2px);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1) translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .card-unfold-anim {
+        animation: cardUnfoldFlip 0.38s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+      }
+
+      .action-bubble-anim {
+        animation: actionBubblePop 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
