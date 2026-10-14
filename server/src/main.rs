@@ -91,12 +91,16 @@ async fn main() {
             let mut to_remove = Vec::new();
             for (code, room_arc) in rooms.iter() {
                 if let Ok(room) = room_arc.try_lock() {
-                    let human_count = room.players.iter().flatten().filter(|p| !p.is_bot).count();
-                    let connected_count = room.clients.len();
-                    if connected_count == 0 || human_count == 0 {
-                        if room.has_had_clients || human_count == 0 || room.created_at.elapsed().as_secs() > 15 {
-                            to_remove.push(code.clone());
-                        }
+                    let seated_bots = room.players.iter().flatten().filter(|p| p.is_bot).count();
+                    let seated_humans = room.players.iter().flatten().filter(|p| !p.is_bot).count();
+                    let connected_clients = room.clients.len();
+
+                    let only_bots_seated = seated_bots > 0 && seated_humans == 0;
+                    let abandoned = room.has_had_clients && connected_clients == 0;
+                    let stale_unjoined = !room.has_had_clients && connected_clients == 0 && room.created_at.elapsed().as_secs() > 30;
+
+                    if only_bots_seated || abandoned || stale_unjoined {
+                        to_remove.push(code.clone());
                     }
                 }
             }
@@ -119,15 +123,16 @@ async fn list_rooms(
     let mut to_remove = Vec::new();
     for (code, room_arc) in rooms.iter() {
         let room = room_arc.lock().await;
-        let human_count = room.players.iter().flatten().filter(|p| !p.is_bot).count();
-        if room.clients.is_empty() || human_count == 0 {
-            if room.has_had_clients || human_count == 0 {
-                // Was joined previously, or only bots remain! Prune!
-                to_remove.push(code.clone());
-            } else if room.created_at.elapsed().as_secs() > 15 {
-                // Created but nobody ever connected within 15s. Prune!
-                to_remove.push(code.clone());
-            }
+        let seated_bots = room.players.iter().flatten().filter(|p| p.is_bot).count();
+        let seated_humans = room.players.iter().flatten().filter(|p| !p.is_bot).count();
+        let connected_clients = room.clients.len();
+
+        let only_bots_seated = seated_bots > 0 && seated_humans == 0;
+        let abandoned = room.has_had_clients && connected_clients == 0;
+        let stale_unjoined = !room.has_had_clients && connected_clients == 0 && room.created_at.elapsed().as_secs() > 30;
+
+        if only_bots_seated || abandoned || stale_unjoined {
+            to_remove.push(code.clone());
         }
     }
     for code in to_remove {
@@ -137,11 +142,12 @@ async fn list_rooms(
     let mut room_list = Vec::new();
     for (code, room_arc) in rooms.iter() {
         let room = room_arc.lock().await;
-        let human_count = room.players.iter().flatten().filter(|p| !p.is_bot).count();
+        let seated_bots = room.players.iter().flatten().filter(|p| p.is_bot).count();
+        let seated_humans = room.players.iter().flatten().filter(|p| !p.is_bot).count();
         let total_clients = room.clients.len();
 
-        // Never list empty rooms or bot-only rooms in the active rooms list
-        if room.clients.is_empty() || total_clients == 0 || human_count == 0 {
+        // Never list abandoned rooms or bot-only tables in the active rooms list
+        if total_clients == 0 || (seated_bots > 0 && seated_humans == 0) {
             continue;
         }
 
@@ -158,7 +164,7 @@ async fn list_rooms(
             "room_code": code,
             "status": room.status,
             "total_clients": total_clients,
-            "human_count": human_count,
+            "human_count": seated_humans,
             "bot_count": bot_count,
             "occupied_seats": occupied_seats,
             "max_seats": room::MAX_SEATS,
