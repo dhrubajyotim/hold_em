@@ -11,7 +11,7 @@ RUN npm run build
 # ==========================================
 # 2. Build Rust Game Engine
 # ==========================================
-FROM rust:1.80-slim-bookworm AS backend-builder
+FROM rust:1-slim-bookworm AS backend-builder
 WORKDIR /app/server
 
 # Build the release binary
