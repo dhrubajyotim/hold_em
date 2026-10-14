@@ -59,6 +59,20 @@ Visit `http://localhost:5173` to create or join a tournament room.
 
 ---
 
+## ☁️ Deploying to Render (Free Tier)
+
+This repository includes a multi-stage `Dockerfile` and `render.yaml` configuration that packages the React frontend and Rust backend into a single unified service:
+
+1. Sign in to [Render](https://render.com) and click **New +** -> **Web Service**.
+2. Connect your GitHub repository: `dhrubajyotim/hold_em`.
+3. Choose **Docker** as the runtime (Render will automatically detect the `Dockerfile`).
+4. Select the **Free** instance type.
+5. Click **Create Web Service**.
+
+Render will automatically build the React assets, compile the Rust backend, and host both the web interface and WebSocket endpoints at your Render URL (e.g., `https://hold-em.onrender.com`).
+
+---
+
 ## 📜 License
 
 MIT License.

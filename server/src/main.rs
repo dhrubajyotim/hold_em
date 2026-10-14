@@ -24,7 +24,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
 use tower_http::cors::{Any, CorsLayer};
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -56,9 +56,15 @@ async fn main() {
 
     let dist_dir = if std::path::Path::new("dist").exists() {
         "dist"
-    } else {
+    } else if std::path::Path::new("../dist").exists() {
         "../dist"
+    } else {
+        "dist"
     };
+
+    let dist_path = std::path::PathBuf::from(dist_dir);
+    let index_file = dist_path.join("index.html");
+    let serve_dir = ServeDir::new(&dist_path).fallback(ServeFile::new(index_file));
 
     let bg_rooms = state.rooms.clone();
 
@@ -66,11 +72,15 @@ async fn main() {
         .route("/api/health", get(|| async { "OK" }))
         .route("/api/rooms", axum::routing::get(list_rooms).post(create_room))
         .route("/ws/:room_code", get(ws_handler))
-        .nest_service("/", ServeDir::new(dist_dir))
+        .fallback_service(serve_dir)
         .layer(cors)
         .with_state(state);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
+    let port = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse::<u16>().ok())
+        .unwrap_or(3001);
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     println!(">>> Poker Backend listening on http://{}", addr);
 
     // Background task: prune empty or bot-only rooms every 10 seconds
