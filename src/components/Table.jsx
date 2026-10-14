@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import { Colors } from '../styles/theme';
 import { Card } from './Card';
@@ -301,13 +301,32 @@ export const Table = ({
     revealedMap[rh.seat] = rh.cards;
   });
 
-  // Map round winners by seat index
-  const winnerMap = {};
-  if (roundWinners && Array.isArray(roundWinners)) {
+  // Aggregate round winners by seat (consolidates main pot + side pots won by the same player)
+  const aggregatedWinners = useMemo(() => {
+    if (!roundWinners || !Array.isArray(roundWinners) || roundWinners.length === 0) return [];
+    const map = new Map();
     roundWinners.forEach((w) => {
-      winnerMap[w.seat] = w;
+      const existing = map.get(w.seat);
+      if (existing) {
+        existing.amount_won += w.amount_won;
+        if (!existing.description && w.description) {
+          existing.description = w.description;
+        }
+      } else {
+        map.set(w.seat, { ...w });
+      }
     });
-  }
+    return Array.from(map.values());
+  }, [roundWinners]);
+
+  // Map round winners by seat index
+  const winnerMap = useMemo(() => {
+    const map = {};
+    aggregatedWinners.forEach((w) => {
+      map[w.seat] = w;
+    });
+    return map;
+  }, [aggregatedWinners]);
 
   // Calculate target translation coordinates for flying pot from center table to winner's seat
   const getWinnerCoords = (winnerSeat) => {
@@ -396,7 +415,7 @@ export const Table = ({
             </View>
 
             {/* Grand Winner Announcement Banner */}
-            {roundWinners && roundWinners.length > 0 && (
+            {aggregatedWinners.length > 0 && (
               <div
                 className="winner-banner-anim"
                 style={{
@@ -431,10 +450,10 @@ export const Table = ({
                   textTransform: 'uppercase',
                 }}>
                   <span>🏆</span>
-                  <span>{roundWinners.length === 1 ? 'Hand Winner' : 'Split Pot'}</span>
+                  <span>{aggregatedWinners.length === 1 ? 'Hand Winner' : 'Split Pot'}</span>
                 </div>
 
-                {roundWinners.map((winner, idx) => {
+                {aggregatedWinners.map((winner, idx) => {
                   const winnerPlayer = seats[winner.seat];
                   const winnerName = winnerPlayer ? winnerPlayer.name : `Seat ${winner.seat + 1}`;
                   return (
@@ -473,7 +492,7 @@ export const Table = ({
             )}
 
             {/* Flying Pot Animation to Winner Seat */}
-            {roundWinners && roundWinners.length > 0 && roundWinners.map((winner, idx) => {
+            {aggregatedWinners.length > 0 && aggregatedWinners.map((winner, idx) => {
               const coords = getWinnerCoords(winner.seat);
               return (
                 <div
