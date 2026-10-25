@@ -1,12 +1,10 @@
-use crate::engine::bot::{ActionDecision, BotBrain, BotPersonality};
+use crate::engine::bot::BotPersonality;
 use crate::engine::card::{Card, Deck};
-use crate::engine::hand_eval::HandEvaluator;
 use crate::engine::pot::PotManager;
 use crate::engine::tournament::{EscalationRule, TournamentManager};
 use crate::messages::*;
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::mpsc;
 
 pub const MAX_SEATS: usize = 10;
 
@@ -51,6 +49,7 @@ pub struct Room {
     pub highest_bet: u32,
     pub min_raise: u32,
     pub last_raiser_seat: Option<usize>,
+    pub last_full_raise_diff: u32,
     pub players_acted_this_round: Vec<usize>,
     pub winner_name: Option<String>,
     pub created_at: std::time::Instant,
@@ -75,6 +74,7 @@ impl Room {
             highest_bet: 0,
             min_raise: 0,
             last_raiser_seat: None,
+            last_full_raise_diff: 0,
             players_acted_this_round: Vec::new(),
             winner_name: None,
             created_at: std::time::Instant::now(),

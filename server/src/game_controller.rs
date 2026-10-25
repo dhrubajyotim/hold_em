@@ -201,6 +201,7 @@ impl GameController {
 
                 room.highest_bet = blinds.big_blind;
                 room.min_raise = blinds.big_blind * 2;
+                room.last_full_raise_diff = blinds.big_blind;
                 room.last_raiser_seat = Some(bb_seat);
 
                 // First to act pre-flop is seat after BB (UTG)
@@ -378,10 +379,19 @@ impl GameController {
 
                 if new_total_bet > room.highest_bet {
                     let raise_diff = new_total_bet - room.highest_bet;
-                    room.min_raise = new_total_bet + raise_diff.max(room.tournament.current_blinds().big_blind);
+                    let min_legal_diff = room.last_full_raise_diff.max(room.tournament.current_blinds().big_blind);
+                    let is_full_raise = raise_diff >= min_legal_diff;
+
+                    if is_full_raise {
+                        room.min_raise = new_total_bet + raise_diff;
+                        room.last_full_raise_diff = raise_diff;
+                        room.last_raiser_seat = Some(seat);
+                        room.players_acted_this_round.clear();
+                    } else {
+                        // Incomplete all-in raise: increase min_raise by previous increment, do not reopen betting to players who already acted
+                        room.min_raise = new_total_bet + min_legal_diff;
+                    }
                     room.highest_bet = new_total_bet;
-                    room.last_raiser_seat = Some(seat);
-                    room.players_acted_this_round.clear();
                 }
 
                 if !room.players_acted_this_round.contains(&seat) {
@@ -481,7 +491,9 @@ impl GameController {
                     }
                 }
                 room.highest_bet = 0;
-                room.min_raise = room.tournament.current_blinds().big_blind;
+                let bb = room.tournament.current_blinds().big_blind;
+                room.min_raise = bb;
+                room.last_full_raise_diff = bb;
                 room.last_raiser_seat = None;
                 room.players_acted_this_round.clear();
 
@@ -620,7 +632,17 @@ impl GameController {
                         }
                     }
 
-                    let pots = room.pot_manager.calculate_pots(&non_folded);
+                    let (pots, refunds) = room.pot_manager.calculate_pots_and_refunds(&non_folded);
+
+                    // Refund uncalled bets directly back to the players
+                    for (seat, refund_amt) in refunds {
+                        if let Some(ref mut p) = room.players[seat] {
+                            p.chips += refund_amt;
+                        }
+                    }
+
+                    let dealer = room.dealer_seat;
+
                     for (pot_idx, pot) in pots.iter().enumerate() {
                         let mut best_score: Option<&crate::engine::hand_eval::EvaluatedHand> = None;
                         let mut pot_winners: Vec<usize> = Vec::new();
@@ -645,11 +667,14 @@ impl GameController {
                         }
 
                         if !pot_winners.is_empty() {
+                            // Sort winners clockwise from the dealer button (earliest position gets odd remainder chip)
+                            pot_winners.sort_by_key(|&s| (s + MAX_SEATS - (dealer + 1)) % MAX_SEATS);
+
                             let split_amount = pot.amount / pot_winners.len() as u32;
                             let remainder = pot.amount % pot_winners.len() as u32;
 
                             for (i, &winner_seat) in pot_winners.iter().enumerate() {
-                                let payout = split_amount + if i == 0 { remainder } else { 0 };
+                                let payout = split_amount + if (i as u32) < remainder { 1 } else { 0 };
                                 if let Some(ref mut p) = room.players[winner_seat] {
                                     p.chips += payout;
                                     let desc = hand_scores.get(&winner_seat).map_or("", |e| &e.description);
